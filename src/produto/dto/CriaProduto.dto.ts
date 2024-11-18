@@ -1,56 +1,81 @@
-import { Type } from "class-transformer";
-import { IsArray, IsNotEmpty, IsNumber, IsPositive, IsString, MaxLength, Min, ValidateNested, ArrayMinSize, IsUrl, Matches } from "class-validator";
-
-export class CriaProdutoDTO {
-    @IsString()
-    @IsNotEmpty()
-    nome: string;
-
-    @IsNumber({ maxDecimalPlaces: 2 })
-    @IsPositive()
-    valor: number;
-
-    @IsNumber()
-    @Min(0)
-    quantidade: number;
-
-    @IsString()
-    @IsNotEmpty()
-    @MaxLength(1000)
-    descricao: string;
-
-    @ValidateNested({ each: true })
-    @IsArray()
-    @ArrayMinSize(2)
-    @Type(() => CaracteristicaProdutoDTO)
-    caracteristicas: CaracteristicaProdutoDTO[];
-
-    @ValidateNested({ each: true })
-    @IsArray()
-    @ArrayMinSize(1)
-    @Type(() => ImagemProdutoDTO)
-    imagens: ImagemProdutoDTO[];
-
-    @IsString()
-    @IsNotEmpty()
-    categoria: string;
-}
+import { Type } from 'class-transformer';
+import {
+  ArrayMinSize,
+  IsArray,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  IsUrl,
+  IsUUID,
+  MaxLength,
+  Min,
+  ValidateNested,
+} from 'class-validator';
+import { ProdutoEntity } from '../produto.entity';
 
 export class CaracteristicaProdutoDTO {
-    @IsString()
-    @IsNotEmpty()
-    nome: string;
+  id: string;
 
-    @IsString()
-    @IsNotEmpty()
-    descricao: string;
+  @IsString()
+  @IsNotEmpty({ message: 'Nome da cadasterística não pode ser vazio' })
+  nome: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'Descrição da característica não pode ser vazio' })
+  descricao: string;
+
+  produto: ProdutoEntity;
 }
 
 export class ImagemProdutoDTO {
-    @IsUrl()
-    url: string;
+  id: string;
 
-    @IsString()
-    @IsNotEmpty()
-    descricao: string;
+  @IsUrl({}, { message: 'URL para imagem inválida' })
+  url: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'Descrição da imagem não pode ser vazia' })
+  descricao: string;
+
+  produto: ProdutoEntity;
+}
+
+export class CriaProdutoDTO {
+  @IsUUID(undefined, { message: 'ID de usuário inválido' })
+  usuarioId: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'Nome do produto não pode ser vazio' })
+  nome: string;
+
+  @IsNumber({ maxDecimalPlaces: 2, allowNaN: false, allowInfinity: false })
+  @Min(1, { message: 'O valor precisa ser maior que zero' })
+  valor: number;
+
+  @IsNumber()
+  @Min(0, { message: 'Quantidade mínima inválida' })
+  quantidadeDisponivel: number;
+
+  @IsString()
+  @IsNotEmpty({ message: 'Descrição do produto não pode ser vazia ' })
+  @MaxLength(1000, {
+    message: 'Descrição não pode ter mais que 1000 caracteres',
+  })
+  descricao: string;
+
+  @ValidateNested()
+  @IsArray()
+  @ArrayMinSize(1)
+  @Type(() => CaracteristicaProdutoDTO)
+  caracteristicas: CaracteristicaProdutoDTO[];
+
+  @ValidateNested()
+  @IsArray()
+  @ArrayMinSize(1)
+  @Type(() => ImagemProdutoDTO)
+  imagens: ImagemProdutoDTO[];
+
+  @IsString()
+  @IsNotEmpty({ message: 'Categoria do produto não pode ser vazia' })
+  categoria: string;
 }
